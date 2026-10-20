@@ -307,6 +307,6 @@ Released under the [MIT License](LICENSE). See `LICENSE` for details.
 **Srimedha** · Team ID `VTU-QFF-HC-0151` · Tier `Online`
 · Built with ⚛️ Qiskit for the VTU-QFF Hackathon
 
-[⬆ Back to Top](#Srimedha)
+[⬆ Back to Top](#srimedha)
 
 </div>
