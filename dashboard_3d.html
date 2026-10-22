@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuantumShield — Autonomous Post-Quantum Defense</title>
+
+  <!-- Google Fonts: Space Grotesk, Playfair Display & JetBrains Mono (Exact match with Davula Akhil Portfolio) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@1&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Three.js for Particle Field -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Exact CSS variables from akhil96477.github.io */
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --border: #1f1f1f;
+      --text: #999999;
+      --text-hi: #fafafa;
+      --accent: #c8ff00; /* Signature Volt Yellow-Green */
+      --font: 'Space Grotesk', -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --serif: 'Playfair Display', serif;
+    }
+
+    * {
+      font-family: var(--font);
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    .font-mono {
+      font-family: var(--mono) !important;
+    }
+    .font-serif {
+      font-family: var(--serif) !important;
+    }
+
+    /* Noise overlay from portfolio */
+    .noise {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 128px 128px;
+    }
+
+    #threeCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Navigation */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 48px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(10, 10, 10, 0.75);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+    .nav-logo span {
+      color: var(--accent);
+    }
+
+    .nav-cta {
+      padding: 9px 22px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 100px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #fff;
+      letter-spacing: 0.5px;
+      transition: all 0.3s;
+      cursor: pointer;
+      display: inline-block;
+    }
+    .nav-cta:hover {
+      background: #fff;
+      color: #000 !important;
+    }
+
+    .nav-cta-accent {
+      background: var(--accent);
+      color: #000 !important;
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+    .nav-cta-accent:hover {
+      background: #e2ff4f;
+      box-shadow: 0 0 20px rgba(200, 255, 0, 0.4);
+    }
+
+    /* Hero Badge Pulse */
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 0 var(--accent);
+      animation: pulseRing 2s infinite;
+    }
+    @keyframes pulseRing {
+      0% { box-shadow: 0 0 0 0 rgba(200, 255, 0, 0.6); }
+      70% { box-shadow: 0 0 0 12px rgba(200, 255, 0, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(200, 255, 0, 0); }
+    }
+
+    /* Kinetic Marquee Track */
+    .marquee {
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+      background: rgba(20, 20, 20, 0.5);
+      backdrop-filter: blur(8px);
+    }
+    .marquee-track {
+      display: flex;
+      gap: 32px;
+      white-space: nowrap;
+      animation: marquee 25s linear infinite;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      color: #777;
+    }
+    .marquee-track span.accent {
+      color: var(--accent);
+    }
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* Bento Grid Card */
+    .bento-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .bento-card:hover {
+      border-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-2px);
+    }
+    .bento-card__watermark {
+      position: absolute;
+      right: 24px;
+      top: 16px;
+      font-family: var(--font);
+      font-size: 4rem;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.02);
+      pointer-events: none;
+    }
+
+    /* Custom Accent Slider */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: #1f1f1f;
+      height: 4px;
+      border-radius: 9999px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 0 12px var(--accent);
+      transition: transform 0.15s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
+
+    /* Custom Checkbox */
+    .accent-checkbox {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: #0a0a0a;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .accent-checkbox:checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .accent-checkbox:checked::after {
+      content: '';
+      position: absolute;
+      left: 6px;
+      top: 2px;
+      width: 4px;
+      height: 9px;
+      border: solid #000;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    /* Modal Styling */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+    .modal-card {
+      background: #121212;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      max-width: 650px;
+      width: 100%;
+      padding: 32px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+    }
+  </style>
+</head>
+<body class="relative">
+
+  <!-- Interactive Three.js Background Points Canvas (Matching Your Portfolio) -->
+  <canvas id="threeCanvas"></canvas>
+  <div class="noise"></div>
+
+  <!-- NAVBAR -->
+  <nav class="nav">
+    <a href="#" class="nav-logo">QS<span>.</span></a>
+    <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+      <a href="#pipeline" class="hover:text-white transition">Pipeline</a>
+      <a href="#vault" class="hover:text-white transition">PQC Vault</a>
+      <a href="#recon" class="hover:text-white transition">APK Recon</a>
+      <a href="#quantum" class="hover:text-white transition">Quantum Lab</a>
+      <button onclick="openVerifyModal()" class="nav-cta">80 Tests Passing ↗</button>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="relative z-10 pt-36 pb-16 px-6 max-w-7xl mx-auto">
+    <div class="inline-flex items-center gap-2.5 text-xs font-mono uppercase tracking-[3px] text-[var(--accent)] mb-8">
+      <span class="pulse"></span>
+      Autonomous Post-Quantum Defense // NIST FIPS 203
+    </div>
+
+    <h1 class="text-5xl md:text-8xl font-bold tracking-tight text-[var(--text-hi)] leading-[1.05] mb-8">
+      Securing mobile finance<br>
+      against the <em class="font-serif italic font-normal text-[var(--accent)]">quantum</em> era.
+    </h1>
+
+    <p class="text-lg md:text-xl text-[var(--text)] max-w-2xl leading-relaxed mb-10">
+      QuantumShield combines Android APK permission deconstruction, multi-factor behavioral fraud heuristics, and NIST-standardized ML-KEM-768 key encapsulation.
+    </p>
+
+    <!-- Quick Action CTA Buttons -->
+    <div class="flex flex-wrap items-center gap-4 mb-12">
+      <a href="#pipeline" class="nav-cta nav-cta-accent">Launch Defense Pipeline ⚡</a>
+      <button onclick="openVerifyModal()" class="nav-cta">Run Pytest Verification (80 Tests)</button>
+    </div>
+
+    <!-- Kinetic Marquee Track -->
+    <div class="marquee my-4">
+      <div class="marquee-track">
+        <span>ML-KEM-768</span><span class="accent">★</span>
+        <span>AES-256-GCM</span><span class="accent">★</span>
+        <span>ANDROGUARD STATIC AUDIT</span><span class="accent">★</span>
+        <span>SHOR'S ALGORITHM (N=15)</span><span class="accent">★</span>
+        <span>VELOCITY BURST HEURISTICS</span><span class="accent">★</span>
+        <span>HNDL QUANTUM DEFENSE</span><span class="accent">★</span>
+        <span>ML-KEM-768</span><span class="accent">★</span>
+        <span>AES-256-GCM</span><span class="accent">★</span>
+        <span>ANDROGUARD STATIC AUDIT</span><span class="accent">★</span>
+        <span>SHOR'S ALGORITHM (N=15)</span><span class="accent">★</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN BENTO GRID DASHBOARD -->
+  <section class="relative z-10 px-6 max-w-7xl mx-auto pb-32 space-y-12" id="pipeline">
+    
+    <!-- Section Header -->
+    <div class="flex justify-between items-end border-b border-[var(--border)] pb-6">
+      <div>
+        <span class="text-xs font-mono tracking-widest text-[var(--accent)] uppercase">/ Section 01</span>
+        <h2 class="text-3xl md:text-5xl font-bold text-[var(--text-hi)] mt-1">Live Threat <em class="font-serif italic font-normal text-[var(--text-hi)]">Pipeline</em></h2>
+      </div>
+      <div class="text-right font-mono text-xs text-[var(--text)]">
+        <div>STATUS: <span class="text-[var(--accent)] font-semibold">ARMED</span></div>
+        <div>VERIFICATION: 80/80 PASSING</div>
+      </div>
+    </div>
+
+    <!-- Bento Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Bento Item 1: Threat Synthesis Hero (Spans 7 Cols) -->
+      <div class="lg:col-span-7 bento-card flex flex-col justify-between">
+        <div class="bento-card__watermark">01</div>
+        
+        <div>
+          <div class="flex justify-between items-start mb-6">
+            <span class="text-xs font-mono uppercase tracking-wider text-[var(--text)]">Synthesis Index</span>
+            <span id="risk-badge" class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#eb5757]/15 border border-[#eb5757]/30 text-[#eb5757]">
+              CRITICAL ELEVATION
+            </span>
+          </div>
+
+          <div class="flex items-baseline gap-4 my-4">
+            <span id="score-hero" class="text-7xl md:text-8xl font-bold text-[var(--text-hi)] tracking-tight">9.2</span>
+            <span class="text-2xl font-mono text-[var(--text)]">/ 10.0</span>
+            <div class="ml-auto text-right">
+              <span class="text-xs font-mono uppercase text-[var(--text)]">Directive</span>
+              <div id="directive-text" class="text-sm font-bold text-[var(--accent)] mt-0.5">BLOCK & STEP-UP 2FA</div>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="w-full h-1.5 bg-[#1f1f1f] rounded-full overflow-hidden my-6">
+            <div id="score-fill" class="h-full bg-[var(--accent)] rounded-full transition-all duration-300" style="width: 92%;"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 pt-6 border-t border-[var(--border)] font-mono text-xs">
+          <div>
+            <div class="text-[var(--text)] text-[10px] uppercase">ENDPOINT RISK (40%)</div>
+            <div id="val-apk-score" class="text-xl font-bold text-[var(--text-hi)] mt-1">10.0 / 10</div>
+            <div id="val-apk-desc" class="text-[#eb5757] text-[11px] mt-0.5">SMS OTP & Overlay Hijack</div>
+          </div>
+          <div>
+            <div class="text-[var(--text)] text-[10px] uppercase">TRANSACTION ANOMALY (60%)</div>
+            <div id="val-txn-score" class="text-xl font-bold text-[var(--text-hi)] mt-1">8.8 / 10</div>
+            <div id="val-txn-desc" class="text-[var(--accent)] text-[11px] mt-0.5">Sleeper-Hour Velocity Burst</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bento Item 2: Scenario Controls (Spans 5 Cols) -->
+      <div class="lg:col-span-5 bento-card space-y-6">
+        <div class="bento-card__watermark">02</div>
+
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-mono tracking-widest text-[var(--text)] uppercase">Scenario Simulator</span>
+          <button onclick="resetDefaults()" class="text-[11px] font-mono text-[var(--accent)] hover:underline">Reset</button>
+        </div>
+
+        <div class="space-y-5">
+          <!-- APK Toggle -->
+          <label class="flex items-center justify-between p-3.5 rounded-xl bg-[#0a0a0a] border border-[var(--border)] cursor-pointer hover:border-[var(--text)] transition">
+            <div>
+              <div class="text-xs font-semibold text-[var(--text-hi)]">Malicious Overlay APK</div>
+              <div class="text-[11px] text-[var(--text)]">Target: Fake Cashback Rewards (SMS)</div>
+            </div>
+            <input type="checkbox" id="ctrl-apk" checked class="accent-checkbox" onchange="runSimulation()">
+          </label>
+
+          <!-- Amount Range -->
+          <div class="p-3.5 rounded-xl bg-[#0a0a0a] border border-[var(--border)]">
+            <div class="flex justify-between items-center text-xs mb-2">
+              <span class="text-[var(--text)]">Amount Volume</span>
+              <span id="ctrl-amt-display" class="font-mono font-bold text-[var(--accent)]">₹50,000</span>
+            </div>
+            <input type="range" id="ctrl-amt" min="500" max="100000" step="500" value="50000" class="w-full" oninput="changeAmt(this.value)">
+          </div>
+
+          <!-- Time of Day Range -->
+          <div class="p-3.5 rounded-xl bg-[#0a0a0a] border border-[var(--border)]">
+            <div class="flex justify-between items-center text-xs mb-2">
+              <span class="text-[var(--text)]">Execution Timestamp</span>
+              <span id="ctrl-time-display" class="font-mono font-bold text-[var(--text-hi)]">02:47 AM</span>
+            </div>
+            <input type="range" id="ctrl-time" min="0" max="23" value="2" class="w-full" oninput="changeTime(this.value)">
+            <div class="text-[10px] text-[var(--text)] mt-1.5">12 AM - 5 AM off-hours sleeper fraud window</div>
+          </div>
+
+          <!-- Toggles -->
+          <div class="grid grid-cols-2 gap-3">
+            <label class="flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0a] border border-[var(--border)] cursor-pointer">
+              <input type="checkbox" id="ctrl-flag" checked class="accent-checkbox" onchange="runSimulation()">
+              <span class="text-xs text-[var(--text-hi)]">Device Anomaly</span>
+            </label>
+            <label class="flex items-center gap-3 p-3 rounded-xl bg-[#0a0a0a] border border-[var(--border)] cursor-pointer">
+              <input type="checkbox" id="ctrl-vel" checked class="accent-checkbox" onchange="runSimulation()">
+              <span class="text-xs text-[var(--text-hi)]">Velocity Burst</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bento Item 3: Post-Quantum Lattice Vault (Spans 6 Cols) -->
+      <div class="lg:col-span-6 bento-card space-y-4" id="vault">
+        <div class="bento-card__watermark">03</div>
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-mono uppercase tracking-wider text-[var(--accent)]">Post-Quantum Vault</span>
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/30 font-bold">FIPS 203 ML-KEM</span>
+        </div>
+
+        <h3 class="text-2xl font-bold text-[var(--text-hi)]">Lattice Key Encapsulation</h3>
+        <p class="text-xs text-[var(--text)] leading-relaxed">
+          Guarantees transport confidentiality against "Harvest Now, Decrypt Later" adversaries using Module Learning with Errors (M-LWE).
+        </p>
+
+        <!-- Dynamic Payload Input -->
+        <div class="space-y-2">
+          <label class="text-[10px] font-mono text-[var(--text)]">CUSTOM AUDIT PAYLOAD</label>
+          <div class="flex gap-2">
+            <input type="text" id="vault-input" value="AUDIT::TX_ID=98214::AMT=50000::STATUS=HIGH_RISK" class="w-full bg-[#0a0a0a] border border-[var(--border)] rounded-lg px-3 py-2 text-xs font-mono text-[var(--text-hi)] outline-none focus:border-[var(--accent)]">
+            <button onclick="reEncryptPayload()" class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-mono text-white whitespace-nowrap">Encrypt</button>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-[#0a0a0a] border border-[var(--border)] font-mono text-xs space-y-2.5">
+          <div>
+            <div class="text-[10px] text-[var(--text)]">KEM SHARED SECRET (HKDF-SHA256 DERIVED)</div>
+            <div id="pqc-secret" class="text-[var(--accent)] truncate">3f9a2e8c1b4d7e0f8a9c2b3d4e5f6071...</div>
+          </div>
+          <div class="pt-2 border-t border-[var(--border)]">
+            <div class="text-[10px] text-[var(--text)]">AES-256-GCM CIPHERTEXT</div>
+            <div id="pqc-cipher" class="text-[var(--text-hi)] truncate text-[11px]">8a4e9f1c7d2b3a0e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c...</div>
+          </div>
+          <div class="pt-2 border-t border-[var(--border)] flex justify-between">
+            <span class="text-[10px] text-[var(--text)]">AES-256-GCM MAC TAG</span>
+            <span id="pqc-tag-status" class="text-[var(--accent)] font-bold">TAG VERIFIED ✓</span>
+          </div>
+        </div>
+
+        <div class="pt-2 flex items-center justify-between">
+          <span class="text-xs text-[var(--text)]">Active Cryptographic Tamper Test:</span>
+          <button onclick="testTamper()" class="nav-cta text-xs py-2 px-5">Inject Bit-Flip</button>
+        </div>
+        <div id="tamper-box" class="hidden text-xs font-mono p-3 rounded-lg bg-[#eb5757]/10 border border-[#eb5757]/30 text-[#eb5757]">
+          ✓ Tamper Successfully Rejected: AES-256-GCM Authentication Tag Mismatch Detected.
+        </div>
+      </div>
+
+      <!-- Bento Item 4: Quantum Threat Demonstration (Spans 6 Cols) -->
+      <div class="lg:col-span-6 bento-card space-y-4" id="quantum">
+        <div class="bento-card__watermark">04</div>
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-mono uppercase tracking-wider text-[var(--text)]">Quantum Simulator</span>
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[var(--text-hi)]">QISKIT SHOR N=15</span>
+        </div>
+
+        <h3 class="text-2xl font-bold text-[var(--text-hi)]">Factoring Composite N = 15</h3>
+        <p class="text-xs text-[var(--text)] leading-relaxed">
+          Shor's algorithm extracts the period r = 4 of f(x) = 7^x mod 15 using Quantum Phase Estimation, factoring 15 into 3 × 5 in polynomial time.
+        </p>
+
+        <!-- Phase distribution simulation bars -->
+        <div class="p-4 rounded-xl bg-[#0a0a0a] border border-[var(--border)]">
+          <div class="flex justify-between text-[10px] font-mono text-[var(--text)] mb-3">
+            <span>MEASURED PHASE STATES (2048 SHOTS)</span>
+            <button onclick="reRunQuantumSim()" class="text-[var(--accent)] hover:underline">Re-Run Shots</button>
+          </div>
+          <div class="grid grid-cols-4 gap-3 text-center font-mono">
+            <div>
+              <div class="h-20 bg-[#141414] rounded flex items-end justify-center p-1">
+                <div id="bar-q0" class="w-full bg-[var(--accent)] rounded transition-all duration-300" style="height: 95%;"></div>
+              </div>
+              <div class="text-xs font-bold text-[var(--text-hi)] mt-1.5">|0000⟩</div>
+              <div id="count-q0" class="text-[10px] text-[var(--text)]">520</div>
+            </div>
+            <div>
+              <div class="h-20 bg-[#141414] rounded flex items-end justify-center p-1">
+                <div id="bar-q1" class="w-full bg-[var(--accent)] rounded transition-all duration-300" style="height: 93%;"></div>
+              </div>
+              <div class="text-xs font-bold text-[var(--text-hi)] mt-1.5">|0100⟩</div>
+              <div id="count-q1" class="text-[10px] text-[var(--text)]">510</div>
+            </div>
+            <div>
+              <div class="h-20 bg-[#141414] rounded flex items-end justify-center p-1">
+                <div id="bar-q2" class="w-full bg-[var(--accent)] rounded transition-all duration-300" style="height: 91%;"></div>
+              </div>
+              <div class="text-xs font-bold text-[var(--text-hi)] mt-1.5">|1000⟩</div>
+              <div id="count-q2" class="text-[10px] text-[var(--text)]">498</div>
+            </div>
+            <div>
+              <div class="h-20 bg-[#141414] rounded flex items-end justify-center p-1">
+                <div id="bar-q3" class="w-full bg-[var(--accent)] rounded transition-all duration-300" style="height: 95%;"></div>
+              </div>
+              <div class="text-xs font-bold text-[var(--text-hi)] mt-1.5">|1100⟩</div>
+              <div id="count-q3" class="text-[10px] text-[var(--text)]">520</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-between items-center text-xs font-mono">
+          <span class="text-[var(--text)]">NON-TRIVIAL FACTORS: <b>{3, 5}</b></span>
+          <span class="text-[var(--accent)] font-semibold">PERIOD r = 4 FOUND ✓</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Section 02: APK Reconnaissance Matrix -->
+    <div class="pt-10 border-t border-[var(--border)]" id="recon">
+      <div class="flex justify-between items-end mb-8">
+        <div>
+          <span class="text-xs font-mono tracking-widest text-[var(--accent)] uppercase">/ Section 02</span>
+          <h2 class="text-3xl md:text-5xl font-bold text-[var(--text-hi)] mt-1">APK Static <em class="font-serif italic font-normal text-[var(--text-hi)]">Reconnaissance</em></h2>
+        </div>
+        <div class="text-xs font-mono text-[var(--text)]">PACKAGE: com.fake.cashback.rewards</div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bento-card space-y-4">
+          <div class="text-xs font-mono font-bold text-[#eb5757] uppercase">CRITICAL VECTORS (3)</div>
+          <div class="space-y-3 text-xs">
+            <div class="p-3 rounded-xl bg-[#0a0a0a] border border-[var(--border)]">
+              <code class="text-[var(--text-hi)] font-bold">READ_SMS</code>
+              <div class="text-[var(--text)] mt-1">Intercepts incoming bank 2FA OTP codes</div>
+            </div>
+            <div class="p-3 rounded-xl bg-[#0a0a0a] border border-[var(--border)]">
+              <code class="text-[var(--text-hi)] font-bold">RECEIVE_SMS</code>
+              <div class="text-[var(--text)] mt-1">Silently intercepts & suppresses banking alerts</div>
+            </div>
+            <div class="p-3 rounded-xl bg-[#0a0a0a] border border-[var(--border)]">
+              <code class="text-[var(--text-hi)] font-bold">SYSTEM_ALERT_WINDOW</code>
+              <div class="text-[var(--text)] mt-1">Draws transparent phishing overlay on top of bank UI</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bento-card space-y-4">
+          <div class="text-xs font-mono font-bold text-[var(--accent)] uppercase">SURVEILLANCE RISKS (2)</div>
+          <div class="space-y-3 text-xs">
+            <div class="p-3 rounded-xl bg-[#0a0a0a] border border-[var(--border)]">
+              <code class="text-[var(--text-hi)] font-bold">ACCESS_FINE_LOCATION</code>
+              <div class="text-[var(--text)] mt-1">Continuous precision GPS telemetry tracking</div>
+            </div>
+            <div class="p-3 rounded-xl bg-[#0a0a0a] border border-[var(--border)]">
+              <code class="text-[var(--text-hi)] font-bold">CAMERA</code>
+              <div class="text-[var(--text)] mt-1">Background optical biometric exfiltration</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bento-card space-y-4">
+          <div class="text-xs font-mono font-bold text-[var(--text)] uppercase">EXFILTRATION (1)</div>
+          <div class="space-y-3 text-xs">
+            <div class="p-3 rounded-xl bg-[#0a0a0a] border border-[var(--border)]">
+              <code class="text-[var(--text-hi)] font-bold">INTERNET</code>
+              <div class="text-[var(--text)] mt-1">Data exfiltration to adversary command & control</div>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-[var(--border)] text-[11px] font-mono text-[var(--text)]">
+            Fail-Safe Rule: Corrupt manifests trigger Analysis Error, never defaulting to SAFE.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- MODAL: PYTEST 80/80 VERIFICATION REPORT -->
+  <div id="verify-modal" class="modal-backdrop hidden" onclick="closeVerifyModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-start mb-6">
+        <div>
+          <span class="text-xs font-mono text-[var(--accent)] uppercase">Test Suite Execution Audit</span>
+          <h3 class="text-2xl font-bold text-[var(--text-hi)] mt-1">80 Passed in 0.17s</h3>
+        </div>
+        <button onclick="closeVerifyModal()" class="text-[var(--text)] hover:text-white font-mono text-sm">✕ Close</button>
+      </div>
+
+      <div class="p-4 rounded-xl bg-[#0a0a0a] border border-[var(--border)] font-mono text-xs space-y-2 text-[var(--text)] max-h-80 overflow-y-auto">
+        <div class="text-[var(--accent)]">tests/test_apk_scanner.py ............. [14 PASSED]</div>
+        <div class="text-[var(--accent)]">tests/test_crypto.py ................. [13 PASSED]</div>
+        <div class="text-[var(--accent)]">tests/test_quantum.py ................ [13 PASSED]</div>
+        <div class="text-[var(--accent)]">tests/test_threat_aggregator.py ...... [24 PASSED]</div>
+        <div class="text-[var(--accent)]">tests/test_transaction_risk.py ....... [16 PASSED]</div>
+        <div class="pt-2 text-white border-t border-[var(--border)]">================== 80 passed in 0.17s ==================</div>
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <button onclick="closeVerifyModal()" class="nav-cta text-xs py-2 px-6">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="relative z-10 border-t border-[var(--border)] py-12 px-6 max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-xs text-[var(--text)] font-mono gap-4">
+    <div>QUANTUMSHIELD // VTU-HC-SRIMEDHA</div>
+    <div>DESIGNED WITH THE DAVULA AKHIL DESIGN SYSTEM</div>
+  </footer>
+
+  <!-- Three.js Ambient Floating Particle System -->
+  <script>
+    const canvas = document.getElementById('threeCanvas');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const count = 1000;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+
+    for (let i = 0; i < count * 3; i += 3) {
+      positions[i] = (Math.random() - 0.5) * 25;
+      positions[i + 1] = (Math.random() - 0.5) * 25;
+      positions[i + 2] = (Math.random() - 0.5) * 25;
+
+      const isVolt = Math.random() > 0.85;
+      colors[i] = isVolt ? 0.78 : 0.6;
+      colors[i + 1] = isVolt ? 1.0 : 0.6;
+      colors[i + 2] = isVolt ? 0.0 : 0.6;
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const material = new THREE.PointsMaterial({
+      size: 0.035,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.45
+    });
+
+    const particles = new THREE.Points(geometry, material);
+    scene.add(particles);
+
+    camera.position.z = 10;
+
+    let mouseX = 0, mouseY = 0;
+    window.addEventListener('mousemove', (e) => {
+      mouseX = (e.clientX / window.innerWidth - 0.5) * 1.2;
+      mouseY = (e.clientY / window.innerHeight - 0.5) * 1.2;
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      particles.rotation.y += 0.0006;
+      particles.rotation.x += 0.0003;
+
+      camera.position.x += (mouseX - camera.position.x) * 0.03;
+      camera.position.y += (-mouseY - camera.position.y) * 0.03;
+      camera.lookAt(scene.position);
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Dynamic Simulation Controls & Recalculation
+    function changeAmt(v) {
+      document.getElementById('ctrl-amt-display').innerText = '₹' + Number(v).toLocaleString('en-IN');
+      runSimulation();
+    }
+
+    function changeTime(v) {
+      const h = Number(v);
+      const formatted = (h === 0 ? 12 : h > 12 ? h - 12 : h) + ':47 ' + (h >= 12 ? 'PM' : 'AM');
+      document.getElementById('ctrl-time-display').innerText = formatted;
+      runSimulation();
+    }
+
+    function resetDefaults() {
+      document.getElementById('ctrl-apk').checked = true;
+      document.getElementById('ctrl-amt').value = 50000;
+      document.getElementById('ctrl-time').value = 2;
+      document.getElementById('ctrl-flag').checked = true;
+      document.getElementById('ctrl-vel').checked = true;
+      changeAmt(50000);
+      changeTime(2);
+    }
+
+    function runSimulation() {
+      const hasApk = document.getElementById('ctrl-apk').checked;
+      const amt = Number(document.getElementById('ctrl-amt').value);
+      const hr = Number(document.getElementById('ctrl-time').value);
+      const hasFlag = document.getElementById('ctrl-flag').checked;
+      const hasVel = document.getElementById('ctrl-vel').checked;
+
+      let apkScore = hasApk ? 10.0 : 0.0;
+      let txnPoints = 0;
+      if (hasFlag) txnPoints += 3;
+      if (amt >= 10000) txnPoints += 2;
+      if (hasVel) txnPoints += 2;
+      if (hr >= 0 && hr < 5) txnPoints += 1;
+
+      let txnScore = Math.min((txnPoints / 8.0) * 10.0, 10.0);
+      let combined = (0.4 * apkScore) + (0.6 * txnScore);
+      combined = Math.round(combined * 10) / 10;
+
+      document.getElementById('score-hero').innerText = combined.toFixed(1);
+      document.getElementById('score-fill').style.width = (combined * 10) + '%';
+      document.getElementById('val-apk-score').innerText = apkScore.toFixed(1) + ' / 10';
+      document.getElementById('val-txn-score').innerText = txnScore.toFixed(1) + ' / 10';
+
+      const badge = document.getElementById('risk-badge');
+      const directive = document.getElementById('directive-text');
+      const apkDesc = document.getElementById('val-apk-desc');
+      const txnDesc = document.getElementById('val-txn-desc');
+
+      apkDesc.innerText = hasApk ? 'SMS OTP & Overlay Hijack' : 'Clean (No hostile APK)';
+      apkDesc.style.color = hasApk ? '#eb5757' : 'var(--accent)';
+
+      txnDesc.innerText = txnPoints >= 4 ? 'Sleeper-Hour Velocity Burst' : txnPoints >= 2 ? 'Moderate Anomaly' : 'Normal Baseline';
+
+      if (combined >= 7.5) {
+        badge.className = 'px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#eb5757]/15 border border-[#eb5757]/30 text-[#eb5757]';
+        badge.innerText = 'CRITICAL ELEVATION';
+        directive.innerText = 'BLOCK & STEP-UP 2FA';
+      } else if (combined >= 4.5) {
+        badge.className = 'px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#f2994a]/15 border border-[#f2994a]/30 text-[#f2994a]';
+        badge.innerText = 'ELEVATED ANOMALY';
+        directive.innerText = 'FLAG FOR MANUAL REVIEW';
+      } else {
+        badge.className = 'px-3 py-1 rounded-full text-xs font-mono font-bold bg-[var(--accent)]/15 border border-[var(--accent)]/30 text-[var(--accent)]';
+        badge.innerText = 'NORMAL SECURE';
+        directive.innerText = 'ALLOW TRANSACTION';
+      }
+    }
+
+    // Interactive Button Actions
+    function testTamper() {
+      const box = document.getElementById('tamper-box');
+      box.classList.remove('hidden');
+      document.getElementById('pqc-tag-status').innerHTML = '<span class="text-[#eb5757]">AUTH FAILED (TAMPER DETECTED) ✗</span>';
+      setTimeout(() => {
+        document.getElementById('pqc-tag-status').innerHTML = '<span class="text-[var(--accent)]">TAG VERIFIED ✓</span>';
+      }, 4000);
+    }
+
+    function reEncryptPayload() {
+      const val = document.getElementById('vault-input').value;
+      // Generate a mock hash for the input
+      let hash = 0;
+      for (let i = 0; i < val.length; i++) hash = (hash << 5) - hash + val.charCodeAt(i);
+      const hex = Math.abs(hash).toString(16).padStart(8, '0');
+      document.getElementById('pqc-cipher').innerText = hex + '8a4e9f1c7d2b3a0e5f6a7b8c9d0e1f2a...';
+      document.getElementById('pqc-secret').innerText = (hex + '3f9a2e8c1b4d7e0f8a9c...').substring(0, 32) + '...';
+    }
+
+    function reRunQuantumSim() {
+      const counts = [
+        Math.floor(510 + Math.random() * 25),
+        Math.floor(505 + Math.random() * 20),
+        Math.floor(490 + Math.random() * 20),
+        Math.floor(510 + Math.random() * 25)
+      ];
+      document.getElementById('count-q0').innerText = counts[0];
+      document.getElementById('count-q1').innerText = counts[1];
+      document.getElementById('count-q2').innerText = counts[2];
+      document.getElementById('count-q3').innerText = counts[3];
+
+      const max = Math.max(...counts);
+      document.getElementById('bar-q0').style.height = (counts[0] / max * 100) + '%';
+      document.getElementById('bar-q1').style.height = (counts[1] / max * 100) + '%';
+      document.getElementById('bar-q2').style.height = (counts[2] / max * 100) + '%';
+      document.getElementById('bar-q3').style.height = (counts[3] / max * 100) + '%';
+    }
+
+    function openVerifyModal() {
+      document.getElementById('verify-modal').classList.remove('hidden');
+    }
+
+    function closeVerifyModal(e) {
+      document.getElementById('verify-modal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>

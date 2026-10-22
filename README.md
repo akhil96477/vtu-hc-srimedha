@@ -1,8 +1,13 @@
 <div align="center">
 
-# Srimedha
+# Srimedha — QuantumShield
 
-**VTU-QFF-HC-0151** &nbsp;|&nbsp; Tier: **Online**
+**VTU-QFF-HC-0151** &nbsp;|&nbsp; Tier: **Online** &nbsp;|&nbsp; Event: **VTU-Qiskit Fall Fest 2026**
+
+[![Tests](https://img.shields.io/badge/pytest-80%20passed-brightgreen.svg)]()
+[![PQC Standard](https://img.shields.io/badge/NIST-FIPS%20203%20(ML--KEM)--blue.svg)]()
+[![Quantum](https://img.shields.io/badge/Qiskit-Shor's%20N=15-purple.svg)]()
+[![Streamlit](https://img.shields.io/badge/Dashboard-Streamlit-red.svg)]()
 
 </div>
 
@@ -23,276 +28,124 @@
 
 ---
 
-## 📌 Table of Contents
+## 🛡️ Executive Summary
 
-- [Team Members](#-team-members-github-ids)
-- [Problem Statement](#-problem-statement)
-- [Proposed Solution](#-proposed-solution)
-- [Approach & Architecture](#-approach--architecture)
-- [Tech Stack](#-tech-stack)
-- [Project Structure](#-project-structure)
-- [How to Run](#-how-to-run)
-- [How to Push Code](#-how-to-push-code)
-- [Submission Checklist](#-submission-checklist)
-- [Resources](#-resources)
-- [License](#-license)
+**QuantumShield** is a defense-in-depth security intelligence platform engineered for mobile banking and financial transactions. It addresses threat vectors across three interconnected operational layers while demonstrating post-quantum cryptographic defenses:
+
+1. **Endpoint Layer (APK Reconnaissance):** Static Android manifest deconstruction mapping permissions to critical financial attack surfaces (OTP theft, screen overlay phishing, and accessibility taps).
+2. **Behavioral Layer (Transaction Integrity Engine):** Multi-factor anomaly scoring using sliding-window burst velocity checks (deque window), sleeper-hour temporal risk heuristics (12 AM – 5 AM), and high-value exposure limits.
+3. **Transport Layer (Post-Quantum Cryptography):** NIST FIPS 203 **ML-KEM-768 (Kyber)** key encapsulation mechanism paired with **AES-256-GCM** authenticated encryption and active tamper rejection.
+4. **Quantum Threat Proof (Qiskit Circuit Lab):** Educational implementation of Shor's algorithm factoring composite $N=15 = 3 \times 5$ via Quantum Phase Estimation, demonstrating why classical RSA/ECC traffic is vulnerable to Harvest Now, Decrypt Later (HNDL) attacks.
+5. **Unified Threat Synthesis:** A cross-module pipeline weighting endpoint risk (40%) and transaction anomaly (60%) into an explainable 0–10 risk score with automated directives (`BLOCK_AND_ALERT`, `FLAG_FOR_REVIEW`, `ALLOW`).
 
 ---
 
-## 👥 Team Members (GitHub IDs)
+## 🏗️ Architecture
 
-> Members are added to this repository as **collaborators** and must accept the
-> GitHub invitation before they can push. Add your GitHub username below.
-
-| # | Name | GitHub Username | Role |
-| :-- | :--- | :--- | :--- |
-| 1 | _Add your name_ | _your-github-username_ | _Team Lead_ |
-| 2 | _Add your name_ | _your-github-username_ | _Developer_ |
-| 3 | _Add your name_ | _your-github-username_ | _Developer_ |
-
-<!--
-Optional: add a plain list instead of the table above.
-- @username1
-- @username2
--->
-
----
-
-## ❓ Problem Statement
-
-<!--
-State the problem you are solving. Be specific: what is broken or missing,
-who experiences it, and why does it matter. Link to the official problem
-statement from the brief if one applies.
--->
-
-**Problem:** _Describe the problem in 2–3 sentences._
-
-**Why it matters:** _Explain the impact or opportunity._
-
-**Track / Category:** _Online / Offline · Track 1 / Track 2 · <domain>_
-
----
-
-## 💡 Proposed Solution
-
-<!--
-Describe your solution. Keep it concrete: the core idea, the user flow, and
-the quantum/ML technique you are applying.
--->
-
-**Solution:** _In 2–3 sentences, describe what you built._
-
-**Key idea:** _The one-line technical summary of your approach._
-
-**Why this works:** _How your approach addresses the problem statement._
-
----
-
-## 🧩 Approach & Architecture
-
-<!--
-Walk through how it works. A simple pipeline diagram in text or Mermaid is ideal.
--->
-
-```mermaid
-flowchart LR
-    A[Input Data] --> B[Preprocessing]
-    B --> C[Quantum Circuit / Model]
-    C --> D[Post-processing]
-    D --> E[Output]
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    THE QUANTUMSHIELD THREAT PIPELINE                    │
+│                                                                         │
+│  LAYER 1: DEVICE         LAYER 2: TRANSACTION      LAYER 3: TRANSPORT  │
+│  ─────────────────       ──────────────────────     ─────────────────── │
+│  User installs APK  ──▶  App triggers a ₹50K   ──▶  Transaction audit  │
+│  with READ_SMS,          transfer at 2:47 AM        payload encrypted   │
+│  RECEIVE_SMS,            with burst anomaly         via ML-KEM-768      │
+│  SYSTEM_ALERT_WINDOW            │                   + AES-256-GCM       │
+│         │                       │                         │             │
+│         ▼                       ▼                         ▼             │
+│  ┌──────────────┐      ┌─────────────────┐       ┌─────────────────┐    │
+│  │ APK Scanner  │      │  Risk Engine    │       │ PQC Vault       │    │
+│  │ (Androguard) │      │  (Heuristics)   │       │ (NIST FIPS 203) │    │
+│  └──────┬───────┘      └────────┬────────┘       └────────┬────────┘    │
+│         │                       │                         │             │
+│         └───────────┬───────────┘                         │             │
+│                     ▼                                     │             │
+│         ┌──────────────────────┐                          │             │
+│         │   THREAT AGGREGATOR  │◀─────────────────────────┘             │
+│         │   Combined Score     │    (Audit payload transport secured    │
+│         │   40% APK + 60% Txn  │     against HNDL quantum threat)       │
+│         └──────────────────────┘                                        │
+│                                                                         │
+│  LAYER 4: QUANTUM DEMO (Qiskit Circuit)                                │
+│  Shor's Algorithm factoring N=15 proves RSA-2048 vulnerability.         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-1. **Input** — _what data goes in and in what format_
-2. **Preprocessing** — _cleaning, feature extraction, encoding_
-3. **Quantum core** — _the circuit, ansatz, or algorithm used_
-4. **Post-processing** — _decoding, measurement, scoring_
-5. **Output** — _what the user finally gets_
-
 ---
 
-## 🛠️ Tech Stack
+## 📁 Repository Structure
 
-| Layer | Technology |
-| :--- | :--- |
-| Language | Python 3.11+ |
-| Quantum SDK | Qiskit `>=1.0`, Qiskit Aer, Qiskit Runtime |
-| Optimisation | Qiskit Optimization / COBYLA / SPSA |
-| Simulation | AerSimulator (statevector / noisemodel) |
-| Environment | JupyterLab / VS Code, `venv` |
-| Version control | Git + GitHub |
-
----
-
-## 📁 Project Structure
-
-```text
+```
 vtu-hc-srimedha/
-├── README.md              # This file
-├── requirements.txt       # Python dependencies
-├── pyproject.toml         # Project metadata (optional)
-├── .gitignore
-├── notebooks/             # Jupyter notebooks for experiments
-│   └── exploration.ipynb
+├── app.py                           # 6-Tab Streamlit Dashboard (Portfolio-themed)
+├── dashboard_3d.html                # Standalone Three.js 3D WebGL Interface
+├── requirements.txt                 # Dependencies
+├── README.md                        # Project documentation
+├── .gitignore                       # Clean Python ignore rules
 ├── src/
 │   ├── __init__.py
-│   ├── circuit.py         # Quantum circuit construction
-│   ├── optimizer.py       # Optimization loop
-│   └── main.py            # Entry point
-├── data/                  # Datasets (use Git LFS for large files)
-├── tests/                 # Unit tests
-│   └── test_circuit.py
-└── docs/                  # Notes, diagrams, reports
+│   ├── threat_aggregator.py         # Cross-module unified 0-10 scorer & narrative
+│   ├── transaction_risk.py          # Multi-factor risk engine (velocity, time-of-day)
+│   ├── apk_scanner.py               # Androguard static analyzer + threat matrix
+│   ├── post_quantum_crypto.py       # ML-KEM-768 / X25519 fallback + AES-256-GCM
+│   └── quantum_demo.py              # Shor's Algorithm (N=15) circuit & HNDL context
+├── tests/
+│   ├── test_threat_aggregator.py    # 24 tests
+│   ├── test_transaction_risk.py     # 16 tests
+│   ├── test_apk_scanner.py          # 14 tests
+│   ├── test_crypto.py               # 13 tests
+│   └── test_quantum.py              # 13 tests
+└── docs/
+    ├── presentation_guide.md        # 5-minute timed judge pitch script & Q&A
+    └── CONVERSATION_EXPORT.md       # Full design & implementation transcript
 ```
 
 ---
 
-## 🚀 How to Run
+## ⚡ Quick Start
 
-### Prerequisites
-
-- Python 3.11 or newer
-- [Git](https://git-scm.com/downloads)
-- A GitHub account (you need collaborator access to this repo)
-
-### 1. Clone the repository
-
+### 1. Installation
 ```bash
 git clone https://github.com/vtu-qiskit-fall-fest-2026/vtu-hc-srimedha.git
 cd vtu-hc-srimedha
-```
-
-### 2. Create a virtual environment
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate        # Linux / macOS
-# .venv\Scripts\activate         # Windows (PowerShell)
-```
-
-### 3. Install dependencies
-
-```bash
-pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 4. Run
-
+### 2. Run Automated Verification Tests
 ```bash
-python -m src.main
+pytest tests/ -v
+# Output: 80 passed in ~0.20s
 ```
 
-Or launch the notebook workflow:
-
+### 3. Launch Dashboard
 ```bash
-jupyter lab
+streamlit run app.py
 ```
-
-### 5. Run the tests
-
-```bash
-pytest -q
-```
+Open **`http://localhost:8501`** in your browser.
 
 ---
 
-## 🔁 How to Push Code
+## 🧪 Automated Test Suite (80 / 80 Passing)
 
-> Full walkthrough: **[Git & Collaboration Handbook](../vtu-hc-guide-git-and-collaboration)** — collaboration
-> workflow, branches, pull requests, reviews and conflict resolution.
+| Test Module | Tests | Focus Area | Status |
+| :--- | :---: | :--- | :---: |
+| `tests/test_threat_aggregator.py` | 24 | Cross-module weighting, narrative generation, scoring edge cases | ✅ Passing |
+| `tests/test_transaction_risk.py` | 16 | Burst velocity tracker, sleeper hour limits, point accumulation | ✅ Passing |
+| `tests/test_apk_scanner.py` | 14 | Manifest parsing, threat category mapping, fail-safe error handling | ✅ Passing |
+| `tests/test_crypto.py` | 13 | ML-KEM key exchange, AES-GCM encryption, active bit-flip tamper rejection | ✅ Passing |
+| `tests/test_quantum.py` | 13 | Shor circuit period finding ($N=15$), eigenstate measurement, HNDL context | ✅ Passing |
+| **Total** | **80** | **Comprehensive zero-mock system integrity** | **100% Pass** |
 
-### Configure Git (first time only)
+---
 
-```bash
-git config --global user.name  "Your Name"
-git config --global user.email "you@example.com"
-```
+## 🎯 Educational Boundaries & Honest Scoping
 
-### Everyday workflow
-
-```bash
-# 1. Get the latest changes
-git checkout main
-git pull origin main
-
-# 2. Create a branch for your work
-git checkout -b feature/my-task
-
-# 3. Commit your work
-git add .
-git commit -m "feat: add variational circuit for the search problem"
-
-# 4. Push the branch
-git push -u origin feature/my-task
-
-# 5. Open a Pull Request on GitHub and request a review
-#    https://github.com/vtu-qiskit-fall-fest-2026/vtu-hc-srimedha/compare/main...feature/my-task
-
-# 6. After approval, merge into main
-git checkout main
-git pull origin main
-git branch -d feature/my-task
-```
-
-### Commit message convention
-
-| Prefix | Meaning |
+| Claim | Reality |
 | :--- | :--- |
-| `feat:` | New feature |
-| `fix:` | Bug fix |
-| `docs:` | Documentation only |
-| `test:` | Adding or fixing tests |
-| `refactor:` | Code restructure, no behaviour change |
-| `chore:` | Build/config/dependency changes |
-
-### Useful commands
-
-```bash
-git status              # what changed
-git log --oneline -10   # recent commits
-git diff                # review changes before committing
-git stash               # shelve changes temporarily
-git pull --rebase       # update your branch on top of main
-```
-
-### Collaborating on the same repo
-
-- **Never push directly to `main`** — open a Pull Request.
-- **Pull before you push** to avoid rejected commits.
-- **Commit often** with clear messages.
-- **Resolve conflicts** locally: `git pull --rebase`, fix the files, then `git add` + `git rebase --continue`.
-- **Ask for a review** before merging — a second pair of eyes catches bugs fast.
-
----
-
-## ✅ Submission Checklist
-
-- [ ] Repository created and **public**
-- [ ] All team members added as **collaborators** and invitations accepted
-- [ ] `README.md` updated with project details, problem statement and solution
-- [ ] Team members listed under [Team Members](#-team-members-github-ids)
-- [ ] `requirements.txt` committed and project runs from a clean clone
-- [ ] Code pushed to `main` and the latest `main` builds successfully
-- [ ] Notebooks committed with **cleared outputs** (or use `nbstrip`)
-- [ ] `README` includes a demo screenshot / video link
-- [ ] Short project summary submitted on the hackathon portal
-
----
-
-## 📚 Resources
-
-| Resource | Link |
-| :--- | :--- |
-| 🔁 Git & collaboration handbook | [Git & Collaboration Handbook](../vtu-hc-guide-git-and-collaboration) |
-| ❓ Problem statements, solutions & terms | [Problem Statements, Solutions & Terms](../vtu-hc-guide-problem-and-solution) |
-| 📄 README writing guide | [README Guide & Template](../vtu-hc-guide-readme-template) |
-| ⚛️ Qiskit documentation | https://docs.quantum.ibm.com/ |
-| ⚛️ Qiskit Runtime & primitives | https://quantum.cloud.ibm.com/docs/ |
-| 🧪 Qiskit Aer simulator | https://docs.quantum.ibm.com/guides/simulator |
-| 💻 IBM Quantum Platform | https://quantum.cloud.ibm.com/ |
-| 🎓 Qiskit textbook | https://qiskit.qotlabs.org/learning/ |
-| 📋 GitHub Docs | https://docs.github.com/ |
+| **"Breaks RSA-2048 with Quantum Computers"** | **No.** Shor's algorithm is demonstrated as an educational proof-of-concept simulation on $N = 15 = 3 \times 5$. Breaking RSA-2048 requires $\sim 4,096$ logical fault-tolerant qubits ($\sim 20$ million physical qubits). |
+| **"Full Dynamic Malware Sandbox"** | **No.** The APK scanner performs static manifest inspection of permissions using Androguard. |
+| **"End-to-End Production PKI"** | **No.** ML-KEM provides confidential key encapsulation; entity authentication requires digital signatures (e.g., ML-DSA) within a complete public key infrastructure. |
 
 ---
 
@@ -307,6 +160,6 @@ Released under the [MIT License](LICENSE). See `LICENSE` for details.
 **Srimedha** · Team ID `VTU-QFF-HC-0151` · Tier `Online`
 · Built with ⚛️ Qiskit for the VTU-QFF Hackathon
 
-[⬆ Back to Top](#srimedha)
+[⬆ Back to Top](#srimedha---quantumshield)
 
 </div>
