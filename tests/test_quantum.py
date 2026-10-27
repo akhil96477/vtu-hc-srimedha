@@ -215,6 +215,42 @@ def test_custom_shots_scaling():
     assert res["factors_found"] == [3, 5]
 
 
+def test_solve_modular_period():
+    """Verify solve_modular_period accurately determines period and factors for multiple bases."""
+    from src.quantum_demo import solve_modular_period
+
+    # Test base a=7 on N=15 (period r=4)
+    res7 = solve_modular_period(N=15, a=7)
+    assert res7["period_r"] == 4
+    assert res7["factoring_successful"] is True
+    assert res7["factors_found"] == [3, 5]
+
+    # Test base a=11 on N=15 (period r=2)
+    res11 = solve_modular_period(N=15, a=11)
+    assert res11["period_r"] == 2
+    assert res11["factoring_successful"] is True
+    assert res11["factors_found"] == [3, 5]
+
+    # Test non-coprime base a=3 on N=15 (gcd reveals factor immediately)
+    res3 = solve_modular_period(N=15, a=3)
+    assert res3["is_coprime"] is False
+    assert 3 in res3["factors_found"]
+
+
+def test_get_transpilation_analysis():
+    """Verify IBM Quantum hardware transpilation metrics are populated accurately."""
+    from src.quantum_demo import get_transpilation_analysis
+
+    analysis = get_transpilation_analysis("IBM Heron")
+    assert "Heron" in analysis["target_qpu"]
+    assert "cz" in analysis["native_basis_gates"]
+    assert analysis["logical_qubits_required"] == 8
+    assert analysis["transpiled_circuit_depth_level3"] == 58
+    assert "cz (2-qubit entanglers)" in analysis["gate_counts_transpiled"]
+    assert "SamplerV2" in analysis["runtime_sampler_v2_snippet"]
+
+
+
 if __name__ == "__main__":
     # Allow running directly via `python tests/test_quantum.py`
     import sys
