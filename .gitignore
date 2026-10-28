@@ -49,6 +49,9 @@ data/*.pkl
 # Quantum backend output
 backend_provider_*.json
 
+# Video generation temporary artifacts
+video_gen/
+
 # OS / editors
 .DS_Store
 Thumbs.db
